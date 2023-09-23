@@ -1,0 +1,15 @@
+diff -ruN benchmark/binutils-2.26/libiberty/cplus-dem.c benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4489/libiberty/cplus-dem.c
+--- benchmark/binutils-2.26/libiberty/cplus-dem.c	2014-10-14 16:32:04.000000000 +0900
++++ benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4489/libiberty/cplus-dem.c	2022-10-27 00:18:52.142785882 +0900
+@@ -2999,6 +2999,11 @@
+ 		      success = 1;
+ 		      break;
+ 		    }
++      else if (n == -1)
++        {
++          success = 0;
++          break;
++        }
+ 		}
+ 	      else
+ 		{

@@ -1,0 +1,12 @@
+diff -ruN benchmark/libming-4.7/util/parser.c benchmark/libming-4.7-patched/libming-4.7-patch-2016-9827/util/parser.c
+--- benchmark/libming-4.7/util/parser.c	2022-11-22 17:20:19.753006800 +0900
++++ benchmark/libming-4.7-patched/libming-4.7-patch-2016-9827/util/parser.c	2022-10-31 00:00:01.751136259 +0900
+@@ -2665,7 +2665,7 @@
+   PAR_BEGIN (SWF_PROTECT);
+ 
+   if( length != 0 ) {
+-  	parserrec->Password = readBytes (f, length);
++  	parserrec->Password = readString (f);
+   } else {
+   	parserrec->Password = NULL;
+   }

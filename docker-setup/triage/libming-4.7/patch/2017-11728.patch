@@ -1,0 +1,21 @@
+diff -ruN benchmark/libming-4.7/util/decompile.c benchmark/libming-4.7-patched/libming-4.7-patch-2017-11728/util/decompile.c
+--- benchmark/libming-4.7/util/decompile.c	2022-11-22 17:20:19.749006812 +0900
++++ benchmark/libming-4.7-patched/libming-4.7-patch-2017-11728/util/decompile.c	2022-12-29 15:53:01.581627213 +0900
+@@ -1680,7 +1680,7 @@
+ 	else
+ 	{
+ 		puts(".");
+-		if (OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER)
++		if (n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER)
+ 		{
+ 			struct SWF_ACTIONSTOREREGISTER *sactv2 = (struct SWF_ACTIONSTOREREGISTER*)&actions[n-1];
+ 			if (sactv2->Register==0)
+@@ -1696,7 +1696,7 @@
+ 	printf(" = " );
+ 
+ 
+-	if ( OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER ) {
++	if ( n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER ) {
+ 		struct SWF_ACTIONSTOREREGISTER *sr =
+ 			(struct SWF_ACTIONSTOREREGISTER*)&actions[n-1];
+ 		printf("R%d", sr->Register);

@@ -1,0 +1,21 @@
+diff -ruN benchmark/binutils-2.26/libiberty/cplus-dem.c benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4492/libiberty/cplus-dem.c
+--- benchmark/binutils-2.26/libiberty/cplus-dem.c	2014-10-14 16:32:04.000000000 +0900
++++ benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4492/libiberty/cplus-dem.c	2022-10-27 00:28:51.280847599 +0900
+@@ -3597,7 +3598,7 @@
+ 	/* A back reference to a previously seen type */
+ 	case 'T':
+ 	  (*mangled)++;
+-	  if (!get_count (mangled, &n) || n >= work -> ntypes)
++	  if (!get_count (mangled, &n) || n < 0 || n >= work -> ntypes)
+ 	    {
+ 	      success = 0;
+ 	    }
+@@ -3775,7 +3776,7 @@
+     /* A back reference to a previously seen squangled type */
+     case 'B':
+       (*mangled)++;
+-      if (!get_count (mangled, &n) || n >= work -> numb)
++      if (!get_count (mangled, &n) || n < 0 || n >= work -> numb)
+ 	success = 0;
+       else
+ 	string_append (result, work->btypevec[n]);

@@ -1,0 +1,46 @@
+diff -ruN benchmark/libming-4.7/util/decompile.c benchmark/libming-4.7-patched/libming-4.7-patch-2017-11729/util/decompile.c
+--- benchmark/libming-4.7/util/decompile.c	2022-11-22 17:20:19.749006812 +0900
++++ benchmark/libming-4.7-patched/libming-4.7-patch-2017-11729/util/decompile.c	2022-12-29 15:52:18.025765753 +0900
+@@ -1437,11 +1437,11 @@
+ 	if((OpCode(actions, n, maxn) == SWFACTION_PUSHDUP
+ 	     || OpCode(actions, n+1, maxn) == SWFACTION_PUSHDUP 
+ 	     || OpCode(actions, n+1, maxn) == SWFACTION_SETVARIABLE)
+-	     || ( OpCode(actions, n-1, maxn) == SWFACTION_GETVARIABLE
++	     || ( n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_GETVARIABLE
+ 	          &&  OpCode(actions, n+1, maxn) == SWFACTION_STOREREGISTER
+ 	          &&  OpCode(actions, n+1, maxn) == SWFACTION_SETVARIABLE))
+ 	{
+-		is_postop=(OpCode(actions, n-1, maxn) == SWFACTION_PUSHDUP)?1:0;
++		is_postop=(n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_PUSHDUP)?1:0;
+ 		if (is_postop)
+ 			var = newVar2(getString(var),dblop);
+ 		else
+@@ -1463,15 +1463,15 @@
+ 	}
+ 	else
+ 	{
+-		if((OpCode(actions, n-1, maxn) == SWFACTION_GETMEMBER &&
++		if((n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_GETMEMBER &&
+ 		    OpCode(actions, n+1, maxn) == SWFACTION_STOREREGISTER &&
+ 		    OpCode(actions, n+2, maxn) == SWFACTION_SETMEMBER ) ||
+-		   (OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER &&
++		   (n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_STOREREGISTER &&
+ 	    	    OpCode(actions, n+1, maxn) == SWFACTION_SETMEMBER &&
+ 		    OpCode(actions, n+2, maxn) == SWFACTION_PUSH ) ||
+-		   (OpCode(actions, n-1, maxn) == SWFACTION_PUSH &&
++		   (n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_PUSH &&
+ 		    OpCode(actions, n+1, maxn) == SWFACTION_SETMEMBER)  ||
+-		   (OpCode(actions, n-3, maxn) == SWFACTION_GETMEMBER &&
++		   (n >= 3 && OpCode(actions, n-3, maxn) == SWFACTION_GETMEMBER &&
+ 		    OpCode(actions, n-2, maxn) == SWFACTION_PUSH &&
+ 		    OpCode(actions, n-1, maxn) == SWFACTION_GETMEMBER &&
+ 		    OpCode(actions, n+1, maxn) == SWFACTION_SETMEMBER &&
+@@ -1503,7 +1503,7 @@
+ 		}
+ 		else
+ 		{
+-			if(OpCode(actions, n-1, maxn) == SWFACTION_PUSH &&
++			if(n >= 1 && OpCode(actions, n-1, maxn) == SWFACTION_PUSH &&
+ 			   OpCode(actions, n+1, maxn) == SWFACTION_STOREREGISTER &&
+ 			   regs[actions[n+1].SWF_ACTIONSTOREREGISTER.Register]->Type == PUSH_VARIABLE)
+ 			{

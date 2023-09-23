@@ -1,0 +1,11 @@
+diff -ruN benchmark/binutils-2.26/libiberty/cplus-dem.c benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4487/libiberty/cplus-dem.c
+--- benchmark/binutils-2.26/libiberty/cplus-dem.c	2014-10-14 16:32:04.000000000 +0900
++++ benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-4487/libiberty/cplus-dem.c	2022-11-02 21:22:31.354093901 +0900
+@@ -1237,6 +1237,7 @@
+     {
+       free ((char *) work -> btypevec);
+       work->btypevec = NULL;
++      work->bsize = 0;
+     }
+   if (work -> ktypevec != NULL)
+     {

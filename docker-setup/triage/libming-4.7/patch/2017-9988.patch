@@ -1,0 +1,14 @@
+diff -ruN benchmark/libming-4.7/util/parser.c benchmark/libming-4.7-patched/libming-4.7-patch-2017-9988/util/parser.c
+--- benchmark/libming-4.7/util/parser.c	2022-11-22 17:20:19.753006800 +0900
++++ benchmark/libming-4.7-patched/libming-4.7-patch-2017-9988/util/parser.c	2022-10-31 00:27:21.570948972 +0900
+@@ -2991,6 +2991,10 @@
+   int i;
+   nsset->Count = readEncUInt30(f);
+   nsset->NS = malloc(sizeof(U30) * nsset->Count);
++  if (nsset->NS == NULL) {
++    SWF_error("parseABC_NS_SET_INFO: Failed to allocate %lu bytes", sizeof(U30) * nsset->Count);
++    return;
++  }
+   for(i = 0; i < nsset->Count; i++)
+     nsset->NS[i] = readEncUInt30(f);
+ }

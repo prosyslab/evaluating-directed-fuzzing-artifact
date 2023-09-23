@@ -1,0 +1,172 @@
+diff -ruN benchmark/binutils-2.26/libiberty/cplus-dem.c benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-6131/libiberty/cplus-dem.c
+--- benchmark/binutils-2.26/libiberty/cplus-dem.c	2014-10-14 16:32:04.000000000 +0900
++++ benchmark/binutils-2.26-patched/binutils-2.26-patch-2016-6131/libiberty/cplus-dem.c	2022-10-30 22:51:48.690874917 +0900
+@@ -56,6 +56,13 @@
+ void * realloc ();
+ #endif
+ 
++#ifdef HAVE_LIMITS_H
++#include <limits.h>
++#endif
++#ifndef INT_MAX
++# define INT_MAX       (int)(((unsigned int) ~0) >> 1)          /* 0x7FFFFFFF */ 
++#endif
++
+ #include <demangle.h>
+ #undef CURRENT_DEMANGLING_STYLE
+ #define CURRENT_DEMANGLING_STYLE work->options
+@@ -137,6 +144,9 @@
+   string* previous_argument; /* The last function argument demangled.  */
+   int nrepeats;         /* The number of times to repeat the previous
+ 			   argument.  */
++  int *proctypevec;     /* Indices of currently processed remembered typevecs.  */
++  int proctypevec_size;
++  int nproctypes;
+ };
+ 
+ #define PRINT_ANSI_QUALIFIERS (work -> options & DMGL_ANSI)
+@@ -428,6 +438,10 @@
+ 
+ static void remember_type (struct work_stuff *, const char *, int);
+ 
++static void push_processed_type (struct work_stuff *, int);
++
++static void pop_processed_type (struct work_stuff *);
++
+ static void remember_Btype (struct work_stuff *, const char *, int, int);
+ 
+ static int register_Btype (struct work_stuff *);
+@@ -1292,6 +1306,10 @@
+       memcpy (to->btypevec[i], from->btypevec[i], len);
+     }
+ 
++if (from->proctypevec)
++    to->proctypevec =
++      XDUPVEC (int, from->proctypevec, from->proctypevec_size);
++      
+   if (from->ntmpl_args)
+     to->tmpl_argvec = XNEWVEC (char *, from->ntmpl_args);
+ 
+@@ -1320,11 +1338,17 @@
+   /* Discard the remembered types, if any.  */
+ 
+   forget_types (work);
+-  if (work -> typevec != NULL)
++  if (work->typevec != NULL)
+     {
+-      free ((char *) work -> typevec);
+-      work -> typevec = NULL;
+-      work -> typevec_size = 0;
++      free ((char *) work->typevec);
++      work->typevec = NULL;
++      work->typevec_size = 0;
++    }
++  if (work->proctypevec != NULL)
++    {
++      free (work->proctypevec);
++      work->proctypevec = NULL;
++      work->proctypevec_size = 0;
+     }
+   if (work->tmpl_argvec)
+     {
+@@ -3538,6 +3562,8 @@
+ do_type (struct work_stuff *work, const char **mangled, string *result)
+ {
+   int n;
++  int i;
++  int is_proctypevec;
+   int done;
+   int success;
+   string decl;
+@@ -3550,6 +3576,7 @@
+ 
+   done = 0;
+   success = 1;
++  is_proctypevec = 0;
+   while (success && !done)
+     {
+       int member;
+@@ -3602,8 +3629,15 @@
+ 	      success = 0;
+ 	    }
+ 	  else
+-	    {
+-	      remembered_type = work -> typevec[n];
++      for (i = 0; i < work->nproctypes; i++)
++        if (work -> proctypevec [i] == n)
++          success = 0;
++
++    if (success)
++      {    
++        is_proctypevec = 1;
++        push_processed_type (work, n);
++        remembered_type = work->typevec[n];
+ 	      mangled = &remembered_type;
+ 	    }
+ 	  break;
+@@ -3826,6 +3860,9 @@
+     string_delete (result);
+   string_delete (&decl);
+ 
++  if (is_proctypevec)
++    pop_processed_type (work);
++
+   if (success)
+     /* Assume an integral type, if we're not sure.  */
+     return (int) ((tk == tk_none) ? tk_integral : tk);
+@@ -4238,6 +4275,41 @@
+ }
+ 
+ static void
++push_processed_type (struct work_stuff *work, int typevec_index)
++{
++  if (work->nproctypes >= work->proctypevec_size)
++    {
++      if (!work->proctypevec_size)
++       {
++         work->proctypevec_size = 4;
++         work->proctypevec = XNEWVEC (int, work->proctypevec_size);
++       }
++      else 
++       {
++         if (work->proctypevec_size < 16)
++           /* Double when small.  */
++           work->proctypevec_size *= 2;
++         else
++           {
++             /* Grow slower when large.  */
++             if (work->proctypevec_size > (INT_MAX / 3) * 2)
++                xmalloc_failed (INT_MAX);
++              work->proctypevec_size = (work->proctypevec_size * 3 / 2);
++           }   
++          work->proctypevec
++            = XRESIZEVEC (int, work->proctypevec, work->proctypevec_size);
++       }
++    }
++    work->proctypevec [work->nproctypes++] = typevec_index;
++}
++
++static void
++pop_processed_type (struct work_stuff *work)
++{
++  work->nproctypes--;
++}
++
++static void
+ remember_type (struct work_stuff *work, const char *start, int len)
+ {
+   char *tem;
+@@ -4495,10 +4567,13 @@
+ 		{
+ 		  string_append (declp, ", ");
+ 		}
++        push_processed_type (work, t); 
+ 	      if (!do_arg (work, &tem, &arg))
+ 		{
++		  pop_processed_type (work);
+ 		  return (0);
+ 		}
++        pop_processed_type (work);
+ 	      if (PRINT_ARG_TYPES)
+ 		{
+ 		  string_appends (declp, &arg);

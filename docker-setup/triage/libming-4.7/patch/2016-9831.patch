@@ -1,0 +1,12 @@
+diff -ruN benchmark/libming-4.7/util/parser.c benchmark/libming-4.7-patched/libming-4.7-patch-2016-9831/util/parser.c
+--- benchmark/libming-4.7/util/parser.c	2022-11-22 17:20:19.753006800 +0900
++++ benchmark/libming-4.7-patched/libming-4.7-patch-2016-9831/util/parser.c	2022-11-27 16:28:22.582165081 +0900
+@@ -755,7 +756,7 @@
+   gradient->NumGradients = readUInt8 (f);
+   if( gradient->NumGradients > 8 ) {
+ 	  fprintf(stderr, "%d gradients in SWF_MORPHGRADiENT, expected a max of 8", gradient->NumGradients);
+-	  /*exit(1);*/
++	  gradient->NumGradients = 8;
+   }
+   for (i = 0; i < gradient->NumGradients; i++)
+     parseSWF_MORPHGRADIENTRECORD (f, &(gradient->GradientRecords[i]));
