@@ -159,7 +159,6 @@ def draw_figure7(input_dir):
         }
 
     global_max = np.max(all_ttes)
-    print("global max is %d" % global_max)
 
     # Draw linear scale cactus plot
 

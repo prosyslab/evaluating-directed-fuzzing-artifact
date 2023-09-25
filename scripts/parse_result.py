@@ -4,7 +4,8 @@ from benchmark import check_targeted_crash_asan, check_targeted_crash_patch
 from stats import average_tte, median_tte, min_max_tte
 import pandas as pd
 
-SCRIPT_PATH=os.path.dirname(os.path.realpath(__file__))
+BASE_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
+DATA_DIR = os.path.join(BASE_DIR, "output", "data")
 REPLAY_ORIG_FILE = "replay_log_orig.txt"
 REPLAY_PATCH_FILE = {
     "": "replay_log_patch.txt",
@@ -85,7 +86,7 @@ def split_replay(buf):
     return replays
 
 def read_sa_results():
-    df = pd.read_csv(os.path.join(SCRIPT_PATH,"..",'sa_overhead.csv'))
+    df = pd.read_csv(os.path.join(BASE_DIR,'sa_overhead.csv'))
     targets= list(df['Target'])
     dafl = list(df['DAFL'])
     aflgo = list(df['AFLGo'])
@@ -182,7 +183,7 @@ def print_target_table(outdir, target, tools, target_list, df_dict):
     for tool in tools:
         med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
             med_tte = median_tte(tte_list, 86400)
             if ">" in med_tte:
@@ -211,7 +212,7 @@ def print_triage_table(outdir, target, tools, target_list, df_dict, triage_vers)
     for tool in tools:
         med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             for triage in triage_vers:
                 tte_list = parse_tte_list(targ_dir, targ, 160, triage)
                 med_tte = median_tte(tte_list, 86400)
@@ -231,7 +232,7 @@ def print_result_table5(outdir, target, tools, target_list):
     for tool in tools:
         med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             for triage in ["asan-a", "asan-b", "asan-c"]:
                 tte_list = parse_tte_list(targ_dir, targ, 160, triage)
                 med_tte = median_tte(tte_list, 86400)
@@ -253,7 +254,7 @@ def print_result_table6(outdir, target, tools, target_list):
     for tool in tools:
         med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             for triage in ["patch-a", "patch-b"]:
                 tte_list = parse_tte_list(targ_dir, targ, 160, triage)
                 med_tte = str(median_tte(tte_list, 86400))
@@ -282,7 +283,7 @@ def print_result_table8(outdir, target, tools, target_list):
         med_tte_list = []
         sa_med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
             med_tte = median_tte(tte_list, 86400)
             if ">" in med_tte:
@@ -297,10 +298,10 @@ def print_result_table8(outdir, target, tools, target_list):
         sa_fuzzing_dict[tool] = sa_med_tte_list
     
     for tool in tools:
-        df_dict[tool+" T_f"] = fuzzing_dict[tool]
+        df_dict[tool+" (T_f)"] = fuzzing_dict[tool]
 
     for tool in tools:
-        df_dict[tool+" T_sa"] = sa_fuzzing_dict[tool]
+        df_dict[tool+" (T_f + T_sa)"] = sa_fuzzing_dict[tool]
         
     tte_df = pd.DataFrame.from_dict(df_dict)
     tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
@@ -330,7 +331,7 @@ def print_result_table9(outdir, target, tools, target_list):
                 stat_list.append("-")
                 stat_list.append("-")
                 continue
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
             tte_list = [x if x != None else 86400 for x in tte_list]
             min_tte = min(tte_list)
@@ -357,7 +358,7 @@ def print_result_figure(outdir, target, tools, target_list):
 
     for tool in tools:
         for targ in target_list:
-            targ_dir = os.path.join(outdir, "%s-%s" % (targ, tool))
+            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
             tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
             tte_list = [x if x != None else 86400 for x in tte_list]
         

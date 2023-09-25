@@ -2,8 +2,39 @@
 
 This is the artifact of the paper *Evaluating Directed Fuzzers: Are We Heading in the Right Direction?* submitted to FSE 2024.
 
-## __1. Getting started__
-### __1.1. System requirements__
+## 0. __Step for Zenodo Only__
+Download the file `evaluating-directed-fuzzing-artifact.tar.gz` and extract the contents.
+```
+tar -zxf evaluating-directed-fuzzing-artifact.tar.gz
+```
+Note that you need at least 152GB of free disk space to extract the contents.
+The rest of this file is identical to the README file in the extracted directory.
+
+
+## 1. __Reproducing the results in the paper__
+
+In this version of the artifact, we provide the raw data of the experiments in the paper under the directory `output/data`.
+
+We also provide a Python script to reproduce the tables and figures as exactly in the paper.
+For the Python dependencies, run
+```
+$ yes | pip3 install -r requirements.txt
+```
+
+Now, you can run
+```
+$ python3 ./scripts/reproduce.py [target]
+```
+As a result, relevant tables and figures will be reproduced and stored under the directory `output/[target]`.
+
+Note that `[target]` can be one of the following: `table3`, `table4`, `table5`, `table6`, `table8`, `table9`, `figure6`, `figure7`.
+We do not support `table7` because `sa_overhead.csv` file is equivalent to the table.
+
+
+Each table or figure would take a few minutes to reproduce, except for Table 9, which may take up to an hour.
+
+## __2. Experimental Setup__
+### __2.1. System requirements__
 To run the experiments in the paper, we used a 64-core (Intel Xeon Processor Gold 6226R, 2.90 GHz) machine
 with 192 GB of RAM and Ubuntu 20.04. Out of 64 cores, We utilized 40 cores with 4 GB of RAM assigned for each core.
 
@@ -28,7 +59,7 @@ yes | pip3 install -r requirements.txt
 
 &nbsp;
 
-### __1.2. System configuration__
+### __2.2. System configuration__
 
 To run AFL-based fuzzers, you should first fix the core dump name pattern.
 ```
@@ -50,10 +81,7 @@ $ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_gover
 
 &nbsp;
 
-### __1.3. Preparing the Docker image__
-
-**Notice:** If you only want to reuse the raw data and reproduce the results in the paper, you can skip this section.
-
+### __2.3. Preparing the Docker image__
 Our artifact is composed of two parts: the Docker image and the framework to build and utilize it.
 The Docker image contains all the necessary tools and dependencies to run the fuzzing experiments.
 The framework, which holds this README file, is used to build the Docker image and orchestrate the fuzzing experiments.
@@ -66,10 +94,10 @@ It will take up to 6 hours to build.
 
 &nbsp;
 
-## 2. __Directory structure__
+## 3. __Directory structure__
 
 
-### __2.1. Local framework structure__
+### __3.1. Local framework structure__
 
 ```
 ├─ README.md                     <- The top-level README (this file)
@@ -118,7 +146,7 @@ It will take up to 6 hours to build.
 ```
 
 
-### __2.2. Docker directory structure__
+### __3.2. Docker directory structure__
 
 ```
 ├─ benchmark                     <- Directory for benchmark data
@@ -148,19 +176,4 @@ It will take up to 6 hours to build.
 ```
 
 
-## 3. __Reproducing the results in the paper__
 
-In this version of the artifact, we provide the raw data of the experiments in the paper under the directory `output`.
-Each table or figure has its own directory, and the relevant data is stored under the directory.
-
-We also provide a Python script to reproduce the tables and figures as exactly in the paper.
-You can simply run
-```
-$ python3 ./scripts/reproduce.py [target]
-```
-Note that`[target]` can be one of the following: `table3`, `table4`, `table5`, `table6`, `table8`, `table9`, `figure6`, `figure7`.
-We do not support `table7` because `sa_overhead.csv` file is equivalent to the table.
-The result, whether in CSV or PDF format, will be stored under the corresponding output directory.
-
-
-Each table or figure would take a few minutes to reproduce, except for Table 9, which takes about 30 minutes.

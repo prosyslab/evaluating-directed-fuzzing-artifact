@@ -109,6 +109,7 @@ def main():
 
     # Set output directory
     outdir = os.path.join(BASE_DIR, "output", target)
+    os.makedirs(outdir, exist_ok=True)
     
     # Parse and print results in CSV format
     print("[*] Parsing and printing results in CSV format")
