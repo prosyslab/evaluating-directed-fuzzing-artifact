@@ -339,9 +339,12 @@ def print_result_table9(outdir, target, tools, target_list):
 
             med_tte = median_tte(tte_list, 86400)
             if ">" in med_tte:
-                TO_iter_cnt = len([x for x in tte_list if x >= 86400])
                 med_tte = "N.A."
-                max_tte = "T.O.(%d)" % (TO_iter_cnt)     
+            if max_tte == 86400:
+                TO_iter_cnt = len([x for x in tte_list if x >= 86400])
+                max_tte = "T.O.(%d)" % (TO_iter_cnt)
+            if min_tte == 86400:
+                min_tte = "N.A." 
 
             stat_list.append(min_tte)
             stat_list.append(max_tte)

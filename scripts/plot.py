@@ -78,7 +78,7 @@ def draw_figure6(input_dir):
 
 
     fig = plt.figure(figsize=(15, 9))
-    gs = gridspec.GridSpec(2, 2, height_ratios=[2, 1.5])
+    gs = gridspec.GridSpec(2, 2, height_ratios=[2, 1.3])
     ax1 = plt.subplot(gs[0, :],zorder=2)
     ax2 = plt.subplot(gs[1, 0])
     ax3 = plt.subplot(gs[1, 1])
@@ -121,7 +121,7 @@ def draw_figure6(input_dir):
     ax3.set_xlabel('Trials', fontsize=19)
 
 
-    ax1.set_ylim(0,min(max_10 * (11/10), 86400))
+    ax1.set_ylim(0,min(max_10 * (12/10), 86400))
     ax2.set_ylim(0,min(max_2040 * (12/10), 86400))
     ax3.set_ylim(0,min(max_2040 * (12/10), 86400))
 

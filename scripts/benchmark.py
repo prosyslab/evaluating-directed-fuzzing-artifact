@@ -3,27 +3,6 @@ from triage import *
 # (target bin, target cmdline, input src, additional option, triage function)
 
 FUZZ_TARGETS = [
-    ("swftophp-2016-9827", "@@", "file", {
-        "asan"    : check_swftophp_2016_9827
-    }),
-    ("swftophp-2016-9829", "@@", "file", {
-        "asan"    : check_swftophp_2016_9829
-    }),
-    ("swftophp-2016-9831", "@@", "file", {
-        "asan"    : check_swftophp_2016_9831_v3,
-        "asan-a"    : check_swftophp_2016_9831_v1,
-        "asan-b"    : check_swftophp_2016_9831_v2,
-        "asan-c"    : check_swftophp_2016_9831_v3
-    }),
-    ("swftophp-2017-9988", "@@", "file", {
-        "asan"    : check_swftophp_2017_9988
-    }),
-    ("swftophp-2017-11728", "@@", "file", {
-        "asan"    : check_swftophp_2017_11728
-    }),
-    ("swftophp-2017-11729", "@@", "file", {
-        "asan"    : check_swftophp_2017_11729
-    }),
     ("cxxfilt-2016-4487", "", "stdin", {
         "asan"    : check_cxxfilt_2016_4487
     }),
@@ -57,6 +36,28 @@ FUZZ_TARGETS = [
         "asan"    : check_cxxfilt_2016_4492
     }),
 
+
+    ("swftophp-2016-9827", "@@", "file", {
+        "asan"    : check_swftophp_2016_9827
+    }),
+    ("swftophp-2016-9829", "@@", "file", {
+        "asan"    : check_swftophp_2016_9829
+    }),
+    ("swftophp-2016-9831", "@@", "file", {
+        "asan"    : check_swftophp_2016_9831_v3,
+        "asan-a"    : check_swftophp_2016_9831_v1,
+        "asan-b"    : check_swftophp_2016_9831_v2,
+        "asan-c"    : check_swftophp_2016_9831_v3
+    }),
+    ("swftophp-2017-9988", "@@", "file", {
+        "asan"    : check_swftophp_2017_9988
+    }),
+    ("swftophp-2017-11728", "@@", "file", {
+        "asan"    : check_swftophp_2017_11728
+    }),
+    ("swftophp-2017-11729", "@@", "file", {
+        "asan"    : check_swftophp_2017_11729
+    }),
 ]
 
 SUB_TARGETS = {
