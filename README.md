@@ -7,6 +7,7 @@ Download the file `evaluating-directed-fuzzing-artifact.tar.gz` and extract the 
 ```
 tar -zxf evaluating-directed-fuzzing-artifact.tar.gz
 ```
+If you wish to use the most recent version of the artifact, please visit [GitHub](https://github.com/prosyslab/evaluating-directed-fuzzing-artifact) where the artifact is maintained.
 
 ## __1. Getting started__
 ### __1.1. System requirements__
