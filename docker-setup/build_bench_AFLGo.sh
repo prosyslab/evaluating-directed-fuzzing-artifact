@@ -56,6 +56,8 @@ build_with_AFLGo "libming-4.7" \
     "swftophp 2016-9827 2016-9829 2016-9831 2017-9988 2017-11728 2017-11729" &
 build_with_AFLGo "binutils-2.26" \
     "cxxfilt 2016-4489 2016-4490 2016-4491 2016-4492 2016-6131 \
-             2016-4492-crash1 2016-4492-crash2"
+             2016-4492-crash2" &
 
 wait
+
+cp /benchmark/bin/AFLGo/cxxfilt-2016-4492 /benchmark/bin/AFLGo/cxxfilt-2016-4492-crash1

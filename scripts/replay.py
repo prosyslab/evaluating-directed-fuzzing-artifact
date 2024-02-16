@@ -3,21 +3,24 @@ from common import *
 from benchmark import generate_replay_worklist
 from parse_result import get_experiment_info, parse_found_time
 
-IMAGE_NAME = "directed-fuzzing-benchmark"
+IMAGE_NAME = "prosyslab/directed-fuzzing-benchmark"
 TIMEOUT_FILE = "timeout"
+
 
 def spawn_containers(works, fuzz_result):
     for i in range(len(works)):
         targ_prog, _, _, iter_id = works[i]
-        crash_dir =  os.path.join(fuzz_result, f"{targ_prog}-{iter_id}", "crashes")
+        crash_dir = os.path.join(fuzz_result, f"{targ_prog}-{iter_id}",
+                                 "crashes")
         cmd = "docker run --tmpfs /box:exec --rm -m=4g -v%s:/crashes -it -d --name %s-%s %s" \
                 % (crash_dir, targ_prog, iter_id, IMAGE_NAME)
         run_cmd(cmd)
-    
+
 
 def run_replay(works, patch_vers):
     for (targ_prog, cmdline, src, iter_id) in works:
-        cmd = "/tool-script/replay.sh %s \"%s\" \"%s\" \"%s\"" % (targ_prog, cmdline, src, patch_vers)
+        cmd = "/tool-script/replay.sh %s \"%s\" \"%s\" \"%s\"" % (
+            targ_prog, cmdline, src, patch_vers)
         run_cmd_in_docker(f"{targ_prog}-{iter_id}", cmd, True)
 
 
@@ -56,21 +59,20 @@ def cleanup_containers(works):
 
 def save_found_times(works, fuzz_result, outdir):
     for (targ_prog, _, _, iter_id) in works:
-        iter_dir  = os.path.join(outdir, f"{targ_prog}-{iter_id}")
-        run_cmd(f"mkdir -p {iter_dir}")
-        log_file =  os.path.join(fuzz_result, f"{targ_prog}-{iter_id}", "replay_log.txt")
+        log_file = os.path.join(fuzz_result, f"{targ_prog}-{iter_id}",
+                                "replay_log.txt")
         time_list = parse_found_time(log_file)
-        cp_log_file = os.path.join(outdir, f"{targ_prog}-{iter_id}", "replay_log_orig.txt")
-        cmd = f"cp {log_file} {cp_log_file}"
-        run_cmd(cmd)
-        result_file = os.path.join(outdir, f"{targ_prog}-{iter_id}", "found_time.csv")
-        csv_write_row(result_file, time_list, True)
+        result_file = os.path.join(fuzz_result, f"{targ_prog}-{iter_id}",
+                                   "found_time.csv")
+        csv_write_row(result_file, time_list)
 
 
 def save_fuzzer_stats(works, fuzz_result, outdir):
     for (targ_prog, _, _, iter_id) in works:
-        stats_file =  os.path.join(fuzz_result, f"{targ_prog}-{iter_id}", "fuzzer_stats")
-        result_file =  os.path.join(outdir, f"{targ_prog}-{iter_id}", "fuzzer_stats")
+        stats_file = os.path.join(fuzz_result, f"{targ_prog}-{iter_id}",
+                                  "fuzzer_stats")
+        result_file = os.path.join(outdir, f"{targ_prog}-{iter_id}",
+                                   "fuzzer_stats")
         cmd = f"cp {stats_file} {result_file}"
         run_cmd(cmd)
 
@@ -89,6 +91,7 @@ def replay_crashes(fuzz_result, outdir, patch_vers):
             save_found_times(works, fuzz_result, outdir)
             save_fuzzer_stats(works, fuzz_result, outdir)
 
+
 def main():
     if len(sys.argv) not in [3, 4]:
         print("Usage: %s <fuzz_result> <outdir> (patch_vers)" % sys.argv[0])
@@ -103,6 +106,7 @@ def main():
 
     run_cmd(f"mkdir -p {outdir}")
     replay_crashes(fuzz_result, outdir, patch_vers)
+
 
 if __name__ == "__main__":
     main()

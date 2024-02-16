@@ -29,7 +29,7 @@ def read_file(filename):
 
 
 def run_sparrow(works):
-    PROCS=[]
+    PROCS = []
     for prog in works:
         input_dir = os.path.join(SMAKE_OUT_DIR, prog)
         input_files = glob.glob(input_dir + '/*.i')
@@ -37,24 +37,33 @@ def run_sparrow(works):
         out_dir = os.path.join(SPARROW_OUT_DIR, prog)
         shutil.rmtree(out_dir, ignore_errors=True)
         os.makedirs(out_dir)
-        cmd=[
-            SPARROW_PATH, "-outdir", out_dir,
-            "-frontend", SLICE_TARGETS[prog]['frontend'],
+        cmd = [
+            SPARROW_PATH,
+            "-outdir",
+            out_dir,
+            "-frontend",
+            SLICE_TARGETS[prog]['frontend'],
             "-unsound_alloc",
             "-unsound_const_string",
             "-unsound_recursion",
             "-unsound_noreturn_function",
-            "-unsound_skip_global_array_init", "1000",
-            "-skip_main_analysis", "-cut_cyclic_call",
+            "-unsound_skip_global_array_init",
+            "1000",
+            "-skip_main_analysis",
+            "-cut_cyclic_call",
             "-unwrap_alloc",
-            "-entry_point", SLICE_TARGETS[prog]['entry_point'],
-            "-max_pre_iter", "10",
+            "-entry_point",
+            SLICE_TARGETS[prog]['entry_point'],
+            "-max_pre_iter",
+            "10",
         ]
-        
+
         bugs = SLICE_TARGETS[prog]['bugs']
         for bug in bugs:
-            if os.path.exists(os.path.join(TARG_LOC_DIR, prog, bug+".sparrow")):
-                slice_loc = read_file(os.path.join(TARG_LOC_DIR, prog, bug+".sparrow"))
+            if os.path.exists(
+                    os.path.join(TARG_LOC_DIR, prog, bug + ".sparrow")):
+                slice_loc = read_file(
+                    os.path.join(TARG_LOC_DIR, prog, bug + ".sparrow"))
             else:
                 slice_loc = read_file(os.path.join(TARG_LOC_DIR, prog, bug))
             cmd += ["-slice", bug + "=" + slice_loc]
@@ -74,13 +83,15 @@ def run_sparrow(works):
     for proc in PROCS:
         prog = proc["prog"]
         proc["p"].communicate()
-    
+
         for bug in proc["bugs"]:
             # First, copy instrumentation target file.
             dst_dir = os.path.join(DAFL_INPUT_DIR, "inst-targ", prog)
             os.makedirs(dst_dir, exist_ok=True)
-            inst_targ_file = os.path.join(proc["outdir"], bug, "slice_func.txt")
-            copy_cmd = "cp %s %s" % (inst_targ_file, os.path.join(dst_dir, bug))
+            inst_targ_file = os.path.join(proc["outdir"], bug,
+                                          "slice_func.txt")
+            copy_cmd = "cp %s %s" % (inst_targ_file, os.path.join(
+                dst_dir, bug))
             run_cmd(copy_cmd)
             # Now, copy DFG information file.
             dst_dir = os.path.join(DAFL_INPUT_DIR, "dfg", prog)
@@ -88,6 +99,7 @@ def run_sparrow(works):
             dfg_file = os.path.join(proc["outdir"], bug, "slice_dfg.txt")
             copy_cmd = "cp %s %s" % (dfg_file, os.path.join(dst_dir, bug))
             run_cmd(copy_cmd)
+
 
 def main():
 

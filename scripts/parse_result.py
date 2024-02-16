@@ -1,12 +1,13 @@
 import sys, os, csv
 from common import csv_read
-from benchmark import check_targeted_crash_asan, check_targeted_crash_patch
+from benchmark import EXP_ENV, check_targeted_crash_asan, check_targeted_crash_patch
 from stats import average_tte, median_tte, min_max_tte
 import pandas as pd
 
 BASE_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
 DATA_DIR = os.path.join(BASE_DIR, "output", "data")
-REPLAY_ORIG_FILE = "replay_log_orig.txt"
+REPLAY_ORIG_FILE = "replay_log.txt"
+ALT_REPLAY_ORIG_FILE = "replay_log_orig.txt"
 REPLAY_PATCH_FILE = {
     "": "replay_log_patch.txt",
     "a": "replay_log_patch_a.txt",
@@ -54,7 +55,7 @@ def parse_found_time(log_file):
         # Identify the end of this replay.
         if REPLAY_ITEM_SIG in buf:
             end_idx = buf.find(REPLAY_ITEM_SIG)
-        else: # In case this is the last replay item.
+        else:  # In case this is the last replay item.
             end_idx = len(buf)
         replay_buf = buf[:end_idx]
         # If there is trailing allocsite information, remove it.
@@ -64,7 +65,7 @@ def parse_found_time(log_file):
         found_time = int(replay_buf.split(FOUND_TIME_SIG)[1].split()[0])
         time_list.append(found_time)
     return time_list
-    
+
 
 def split_replay(buf):
     replays = []
@@ -75,7 +76,7 @@ def split_replay(buf):
         # Identify the end of this replay.
         if REPLAY_ITEM_SIG in buf:
             end_idx = buf.find(REPLAY_ITEM_SIG)
-        else: # In case this is the last replay item.
+        else:  # In case this is the last replay item.
             end_idx = len(buf)
         replay_buf = buf[:end_idx]
         # If there is trailing allocsite information, remove it.
@@ -85,51 +86,28 @@ def split_replay(buf):
         replays.append(replay_buf)
     return replays
 
+
 def read_sa_results():
-    df = pd.read_csv(os.path.join(BASE_DIR,'sa_overhead.csv'))
-    targets= list(df['Target'])
+    df = pd.read_csv(os.path.join(BASE_DIR, 'sa_overhead.csv'))
+    targets = list(df['Target'])
     dafl = list(df['DAFL'])
     aflgo = list(df['AFLGo'])
     aflgo = list(df['SelectFuzz'])
     beacon = list(df['Beacon'])
 
-    sa_dict={}
+    sa_dict = {}
     for tool in ["DAFL", "SelectFuzz", "AFLGo", "Beacon"]:
-        sa_dict[tool]={}
+        sa_dict[tool] = {}
         for i in range(len(targets)):
             sa_dict[tool][targets[i]] = df[tool][i]
     return sa_dict
 
 
-def parse_triage_list(targ, targ_dir, triage_ver):
-    replay_orig_file = os.path.join(targ_dir, REPLAY_ORIG_FILE)
-    with open(replay_orig_file, "r", encoding="latin-1") as f:
-        replay_orig_list = split_replay(f.read())
-    n_crash = len(replay_orig_list)
-    if triage_ver.startswith("asan"):
-        triage = []
-        for i in range(n_crash):
-            triage.append(check_targeted_crash_asan(targ, replay_orig_list[i], triage_ver))
-        return triage
-    elif triage_ver.startswith("patch"):
-        replay_patch_file = os.path.join(targ_dir, REPLAY_PATCH_FILE[triage_ver[len("patch-"):]])
-        with open(replay_patch_file, "r", encoding="latin-1") as f:
-            replay_patch_list = split_replay(f.read())
-        if len(replay_patch_list) != n_crash:
-            print("Number of crash from replay_patch and found_time does not match")
-            exit(1)
-        triage = []
-        for i in range(n_crash):
-            triage.append(check_targeted_crash_patch(targ, replay_orig_list[i], replay_patch_list[i]))
-        return triage
-    else:
-        print(f"Unknown triage method: {triage_ver}")
-        exit(1)
-
-
 def parse_tte(targ, targ_dir, triage_ver):
     found_time_file = os.path.join(targ_dir, FOUND_TIME_FILE)
     replay_orig_file = os.path.join(targ_dir, REPLAY_ORIG_FILE)
+    if not os.path.exists(replay_orig_file):
+        replay_orig_file = os.path.join(targ_dir, ALT_REPLAY_ORIG_FILE)
     found_time_list = list(map(int, csv_read(found_time_file)[0]))
     n_crash = len(found_time_list)
     with open(replay_orig_file, "r", encoding="latin-1") as f:
@@ -139,18 +117,23 @@ def parse_tte(targ, targ_dir, triage_ver):
         exit(1)
     if triage_ver.startswith("asan"):
         for i in range(n_crash):
-            if check_targeted_crash_asan(targ, replay_orig_list[i], triage_ver):
+            if check_targeted_crash_asan(targ, replay_orig_list[i],
+                                         triage_ver):
                 return found_time_list[i]
         return None
     elif triage_ver.startswith("patch"):
-        replay_patch_file = os.path.join(targ_dir, REPLAY_PATCH_FILE[triage_ver[len("patch-"):]])
+        replay_patch_file = os.path.join(
+            targ_dir, REPLAY_PATCH_FILE[triage_ver[len("patch-"):]])
         with open(replay_patch_file, "r", encoding="latin-1") as f:
             replay_patch_list = split_replay(f.read())
         if len(replay_patch_list) != n_crash:
-            print("Number of crash from replay_patch and found_time does not match")
+            print(
+                "Number of crash from replay_patch and found_time does not match"
+            )
             exit(1)
         for i in range(n_crash):
-            if check_targeted_crash_patch(targ, replay_orig_list[i], replay_patch_list[i]):
+            if check_targeted_crash_patch(targ, replay_orig_list[i],
+                                          replay_patch_list[i]):
                 return found_time_list[i]
         return None
     else:
@@ -179,103 +162,82 @@ def analyze_targ_result(outdir, timeout, targ, iter_cnt, triage_ver):
         print("T/O: %d times" % tte_list.count(None))
     print("------------------------------------------------------------------")
 
-def print_target_table(outdir, target, tools, target_list, df_dict):
+
+def print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                       name, triage_vers=None):
+    timelimit = EXP_ENV["TIMELIMTS"][name] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"][name] if "original" not in data_dir else 160
+    if triage_vers is None:
+        triage_vers = ["patch"]
+    else:
+        triage_vers = triage_vers.split()
+
     for tool in tools:
         med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
-            med_tte = median_tte(tte_list, 86400)
-            if ">" in med_tte:
-                found_iter_cnt = 160 - len([x for x in tte_list if (x is None or x > 86400)])
-                med_tte = "N.A.(%d)" % (found_iter_cnt)
-            med_tte_list.append(med_tte)
+            targ_dir = os.path.join(data_dir, "%s-%s" % (targ, tool))
+            for triage in triage_vers:
+                tte_list = parse_tte_list(targ_dir, targ,
+                                          iterations, triage)
+                med_tte = median_tte(tte_list, timelimit)
+                found_iter_cnt = iterations - len([
+                        x for x in tte_list
+                        if (x is None or x > timelimit)
+                    ])
+                if ">" in med_tte:
+                    med_tte = "N.A.(%d)" % (found_iter_cnt)
+                elif name == "table6":
+                    med_tte = "%s (%d)" % (med_tte, found_iter_cnt)
+                med_tte_list.append(med_tte)
         df_dict[tool] = med_tte_list
-    
+
     tte_df = pd.DataFrame.from_dict(df_dict)
     tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
 
-def print_result_table3(outdir, target, tools, target_list):
+
+def print_result_custom_target(data_dir, outdir, target, tools, target_list):
+    df_dict = {}
+    df_dict["Target CVE"] = target_list
+    print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                       "custom")
+
+
+def print_result_table3(data_dir, outdir, target, tools, target_list):
     df_dict = {}
     df_dict["Target Location"] = ["Line 9", "Line 14"]
+    print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                       "table3")
 
-    print_target_table(outdir, target, tools, target_list, df_dict)
 
-def print_result_table4(outdir, target, tools, target_list):
+def print_result_table4(data_dir, outdir, target, tools, target_list):
     df_dict = {}
-    df_dict["Target Location"] = ["Line 4", "Line 14"]
+    df_dict["Target Location"] = ["Line 4", "Line 13"]
+    print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                       "table4")
 
-    print_target_table(outdir, target, tools, target_list, df_dict)
 
-
-def print_triage_table(outdir, target, tools, target_list, df_dict, triage_vers):
-    for tool in tools:
-        med_tte_list = []
-        for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            for triage in triage_vers:
-                tte_list = parse_tte_list(targ_dir, targ, 160, triage)
-                med_tte = median_tte(tte_list, 86400)
-                if ">" in med_tte:
-                    found_iter_cnt = 160 - len([x for x in tte_list if (x is None or x > 86400)])
-                    med_tte = "N.A.(%d)" % (found_iter_cnt)
-                med_tte_list.append(med_tte)
-        df_dict[tool] = med_tte_list
-    
-    tte_df = pd.DataFrame.from_dict(df_dict)
-    tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
-
-def print_result_table5(outdir, target, tools, target_list):
+def print_result_table5(data_dir, outdir, target, tools, target_list):
     df_dict = {}
     df_dict["Lines Checked"] = ["17", "17-20", "17-20, 10, 12"]
+    print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                    "table5", "asan-a asan-b asan-c")
 
-    for tool in tools:
-        med_tte_list = []
-        for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            for triage in ["asan-a", "asan-b", "asan-c"]:
-                tte_list = parse_tte_list(targ_dir, targ, 160, triage)
-                med_tte = median_tte(tte_list, 86400)
-                if ">" in med_tte:
-                    found_iter_cnt = 160 - len([x for x in tte_list if (x is None or x > 86400)])
-                    med_tte = "N.A.(%d)" % (found_iter_cnt)
-                med_tte_list.append(med_tte)
-        df_dict[tool] = med_tte_list
-    
-    tte_df = pd.DataFrame.from_dict(df_dict)
-    tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
 
-def print_result_table6(outdir, target, tools, target_list):
+def print_result_table6(data_dir, outdir, target, tools, target_list):
     df_dict = {}
     df_dict["Patch Used"] = ["Incomplete", "Complete"]
+    print_table(data_dir, outdir, target, tools, target_list, df_dict,
+                       "table6", "patch-a patch-b")
 
-    print_triage_table(outdir, target, tools, target_list, df_dict, ["patch-a", "patch-b"])
 
-    for tool in tools:
-        med_tte_list = []
-        for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            for triage in ["patch-a", "patch-b"]:
-                tte_list = parse_tte_list(targ_dir, targ, 160, triage)
-                med_tte = str(median_tte(tte_list, 86400))
-                if ">" in med_tte:
-                    med_tte = "N.A."
+def print_result_table8(data_dir, outdir, target, tools, target_list):
+    timelimit = EXP_ENV["TIMELIMTS"]["table8"] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"]["table8"] if "original" not in data_dir else 160
+    triage = "patch"
 
-                found_iter_cnt = 160 - len([x for x in tte_list if (x is None or x > 86400)])
-                med_tte = "%s (%d)" % (med_tte, found_iter_cnt)
-
-                med_tte_list.append(med_tte)
-        df_dict[tool] = med_tte_list
-    
-    tte_df = pd.DataFrame.from_dict(df_dict)
-    tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
-
-def print_result_table8(outdir, target, tools, target_list):
     df_dict = {}
     df_dict["CVE"] = ["CVE-2016-4489", "CVE-2016-9831"]
-
     sa_dict = read_sa_results()
-
     fuzzing_dict = {}
     sa_fuzzing_dict = {}
 
@@ -283,30 +245,39 @@ def print_result_table8(outdir, target, tools, target_list):
         med_tte_list = []
         sa_med_tte_list = []
         for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
-            med_tte = median_tte(tte_list, 86400)
+            targ_dir = os.path.join(data_dir, "%s-%s" % (targ, tool))
+            tte_list = parse_tte_list(targ_dir, targ,
+                                      iterations, triage)
+            med_tte = median_tte(tte_list, timelimit)
             if ">" in med_tte:
-                found_iter_cnt = 160 - len([x for x in tte_list if (x is None or x > 86400)])
+                found_iter_cnt = iterations - len([
+                    x for x in tte_list
+                    if (x is None or x > timelimit)
+                ])
                 med_tte = "N.A.(%d)" % (found_iter_cnt)
             elif tool in sa_dict:
-                sa_med_tte = str( int(med_tte) + sa_dict[tool][targ] )
+                sa_med_tte = str(int(med_tte) + sa_dict[tool][targ])
 
             med_tte_list.append(med_tte)
             sa_med_tte_list.append(sa_med_tte)
         fuzzing_dict[tool] = med_tte_list
         sa_fuzzing_dict[tool] = sa_med_tte_list
-    
-    for tool in tools:
-        df_dict[tool+" (T_f)"] = fuzzing_dict[tool]
 
     for tool in tools:
-        df_dict[tool+" (T_f + T_sa)"] = sa_fuzzing_dict[tool]
-        
+        df_dict[tool + " (T_f)"] = fuzzing_dict[tool]
+
+    for tool in tools:
+        df_dict[tool + " (T_f + T_sa)"] = sa_fuzzing_dict[tool]
+
     tte_df = pd.DataFrame.from_dict(df_dict)
     tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
 
-def print_result_table9(outdir, target, tools, target_list):
+
+def print_result_table9(data_dir, outdir, target, tools, target_list):
+    timelimit = EXP_ENV["TIMELIMTS"]["table9"] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"]["table9"] if "original" not in data_dir else 160
+    triage = "patch"
+    
     df_dict = {}
     df_dict["Target CVE"] = []
     df_dict[" "] = []
@@ -331,61 +302,80 @@ def print_result_table9(outdir, target, tools, target_list):
                 stat_list.append("-")
                 stat_list.append("-")
                 continue
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
-            tte_list = [x if x != None else 86400 for x in tte_list]
+            targ_dir = os.path.join(data_dir, "%s-%s" % (targ, tool))
+            tte_list = parse_tte_list(targ_dir, targ,
+                                      iterations, triage)
+            tte_list = [
+                x if x != None else timelimit for x in tte_list
+            ]
             min_tte = min(tte_list)
             max_tte = max(tte_list)
 
-            med_tte = median_tte(tte_list, 86400)
+            med_tte = median_tte(tte_list, timelimit)
             if ">" in med_tte:
                 med_tte = "N.A."
-            if max_tte == 86400:
-                TO_iter_cnt = len([x for x in tte_list if x >= 86400])
+            if max_tte == timelimit:
+                TO_iter_cnt = len(
+                    [x for x in tte_list if x >= timelimit])
                 max_tte = "T.O.(%d)" % (TO_iter_cnt)
-            if min_tte == 86400:
-                min_tte = "N.A." 
+            if min_tte == timelimit:
+                min_tte = "N.A."
 
             stat_list.append(min_tte)
             stat_list.append(max_tte)
             stat_list.append(med_tte)
 
         df_dict[tool] = stat_list
-        
+
     tte_df = pd.DataFrame.from_dict(df_dict)
     tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
 
-def print_result_figure(outdir, target, tools, target_list):
+
+def print_result_figure(data_dir, outdir, target, tools, target_list, name):
+    timelimit = EXP_ENV["TIMELIMTS"][name] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"][name] if "original" not in data_dir else 160
+    triage = "patch"
+
     file = open(os.path.join(outdir, "%s.csv" % target), mode='w', newline='')
     writer = csv.writer(file)
 
     for tool in tools:
         for targ in target_list:
-            targ_dir = os.path.join(DATA_DIR, "%s-%s" % (targ, tool))
-            tte_list = parse_tte_list(targ_dir, targ, 160, "patch")
-            tte_list = [x if x != None else 86400 for x in tte_list]
-        
+            targ_dir = os.path.join(data_dir, "%s-%s" % (targ, tool))
+            tte_list = parse_tte_list(targ_dir, targ,
+                                      iterations, triage)
+            tte_list = [
+                x if x != None else timelimit for x in tte_list
+            ]
+
         writer.writerow([tool] + tte_list)
-    
+
     file.close()
-    
 
-def print_result(outdir, target, tools, target_list):
 
+def print_result(data_dir, outdir, target, tools, target_list):
     if target == "table3":
-        print_result_table3(outdir, target, tools, target_list)
+        print_result_table3(data_dir, outdir, target, tools, target_list)
     elif target == "table4":
-        print_result_table4(outdir, target, tools, target_list)
+        print_result_table4(data_dir, outdir, target, tools, target_list)
     elif target == "table5":
-        print_result_table5(outdir, target, tools, target_list)
+        print_result_table5(data_dir, outdir, target, tools, target_list)
     elif target == "table6":
-        print_result_table6(outdir, target, tools, target_list)
+        print_result_table6(data_dir, outdir, target, tools, target_list)
     elif target == "table8":
-        print_result_table8(outdir, target, tools, target_list)
+        print_result_table8(data_dir, outdir, target, tools, target_list)
     elif target == "table9":
-        print_result_table9(outdir, target, tools, target_list)
-    elif "figure" in target:
-        print_result_figure(outdir, target, tools, target_list)
+        print_result_table9(data_dir, outdir, target, tools, target_list)
+    elif target == "figure6":
+        print_result_figure(data_dir, outdir, target, tools, target_list,
+                            "figure6")
+    elif target == "figure7":
+        print_result_figure(data_dir, outdir, target, tools, target_list,
+                            "figure7")
+    else:
+        print_result_custom_target(data_dir, outdir, target, tools,
+                                   target_list)
+
 
 def main():
     if len(sys.argv) != 3:

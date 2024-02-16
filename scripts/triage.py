@@ -1,5 +1,7 @@
 import re
+
 TOP_SIG = " #0 "
+
 
 def warn(msg, buf):
     print("[Warning]: %s" % msg)
@@ -16,10 +18,12 @@ def get_crash_func(buf):
     line = buf[start_idx:end_idx]
     return line.split()[-1]
 
+
 # Get all functions appearing in the stack trace.
 def get_all_funcs(buf):
-    matches = re.findall(r"#0 0x[0-9a-f]+ in [\S]+", buf)
+    matches = re.findall(r"#(?:[0-9a-f]+) (?:0x[0-9a-f]+) in ([\S]+)", buf)
     return set(matches)
+
 
 # Get the direct caller of the function that crashed.
 def get_crash_func_caller(buf):
@@ -88,7 +92,10 @@ def check_cxxfilt_2016_4492(buf):
 
 def check_cxxfilt_2016_6131(buf):
     if check_all(buf, ["stack-overflow", "do_type"]):
-        if check_all(buf, ["demangle_arm_hp_template", "demangle_class_name", "demangle_fund_type"]):
+        if check_all(buf, [
+                "demangle_arm_hp_template", "demangle_class_name",
+                "demangle_fund_type"
+        ]):
             warn("Unexpected crash point in do_type", buf)
             return True
     return False
@@ -122,6 +129,7 @@ def check_swftophp_2016_9831_v2(buf):
         if re.search(r"parser.c:6[6-9]:", buf) is not None:
             return True
     return False
+
 
 def check_swftophp_2016_9831_v3(buf):
     if "heap-buffer-overflow" in buf:

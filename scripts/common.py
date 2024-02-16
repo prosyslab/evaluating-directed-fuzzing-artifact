@@ -54,6 +54,7 @@ def fetch_works(worklist):
         works.append(worklist.pop(0))
     return works
 
+
 def csv_read(filename):
     f = open(filename, 'r', newline='')
     reader = csv.reader(f)
@@ -61,6 +62,7 @@ def csv_read(filename):
     for row in reader:
         rows.append(list(row))
     return rows
+
 
 def csv_write_row(filename, data, append=False):
     mode = 'a' if append else 'w'

@@ -3,12 +3,10 @@
 # replay.sh <targ_prog> <cmdline> <src> <patch versions>
 # legal patch versions: a, b, orig, default
 
-CRASH_LIST=$(ls /crashes) || exit 1
+CRASH_LIST=$(ls /output/crashes) || exit 1
 
 # During the replay, set the following ASAN_OPTIONS again.
 export ASAN_OPTIONS=allocator_may_return_null=1,detect_leaks=0
-
-mkdir /output
 
 TARG=$1
 VERS=($4)
@@ -32,12 +30,12 @@ for VER in ${VERS[@]}; do
 
         echo -e "\nReplaying crash - ${CRASH_ID[0]} :" >> $LOG
         if [[ $3 == "stdin" ]]; then
-            cat /crashes/$crash | timeout -k 30 30 $PATCHED 2>> $LOG
+            cat /output/crashes/$crash | timeout -k 30 30 $PATCHED 2>> $LOG
             if [[ $? -eq 124 ]]; then
                 echo "TIMEOUT" >> $LOG
             fi
         elif [[ $3 == "file" ]]; then
-            cp -f /crashes/$crash ./@@
+            cp -f /output/crashes/$crash ./@@
             timeout -k 30 30 $PATCHED $2 2>> $LOG
             if [[ $? -eq 124 ]]; then
                 echo "TIMEOUT" >> $LOG

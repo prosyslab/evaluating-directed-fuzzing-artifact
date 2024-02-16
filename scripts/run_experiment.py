@@ -3,9 +3,10 @@ from common import run_cmd, run_cmd_in_docker, check_cpu_count, fetch_works
 from benchmark import generate_fuzzing_worklist
 
 BASE_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
-IMAGE_NAME = "directed-fuzzing-benchmark"
+IMAGE_NAME = "prosyslab/directed-fuzzing-benchmark"
 SUPPORTED_TOOLS = \
   ["AFL", "AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL", ]
+
 
 def decide_outdir(exp_id, tool):
     prefix = exp_id + "-" + tool
