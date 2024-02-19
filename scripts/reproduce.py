@@ -11,7 +11,7 @@ IMAGE_NAME = "prosyslab/directed-fuzzing-benchmark"
 SUPPORTED_TOOLS = \
   [ "AFLGo", "Beacon", "WindRanger","SelectFuzz", "DAFL" ]
 FIGURES_AND_TABLES = [
-    "table3", "table4", "table5", "table6", "table7", "table8", "table9",
+    "table3", "table4", "table5", "table6", "table7", "table8", "table9", "table9-minimal",
     "figure6", "figure7"
 ]
 
