@@ -1,0 +1,63 @@
+### __1. Preparing the Docker image__
+Our artifact is composed of two parts: the Docker image and the framework to build and utilize it.
+The Docker image contains all the necessary tools and dependencies to run the fuzzing experiments.
+The framework, which holds this INSTALL file, is used to build the Docker image and orchestrate the fuzzing experiments.
+
+**Recommended**
+You can pull the pre-built Docker image from Dockerhub.
+
+To do so, run
+```
+$ docker pull prosyslab/directed-fuzzing-benchmark
+```
+The image is big (around 25 GB) and it may take a while to download.
+
+#### __DIY__
+
+If you want to build the docker image yourself, run
+```
+$ docker build -t prosyslab/directed-fuzzing-benchmark -f Dockerfile .
+```
+
+or simply run
+
+```
+$ ./build.sh
+```
+
+However, we do not recommend this because it will take a long time (up to 6 hours, perhapse more depending on your system) to build.
+Nonetheless, we provide the Docker file and the relevant scripts to show how the Docker image was built.
+
+&nbsp;
+
+### __2. System configuration__
+
+To run AFL-based fuzzers, you should first fix the core dump name pattern.
+```
+$ echo core | sudo tee /proc/sys/kernel/core_pattern
+```
+
+If your system has `/sys/devices/system/cpu/cpu*/cpufreq` directory, AFL may
+also complain about the CPU frequency scaling configuration. Check the current
+configuration and remember it if you want to restore it later. Then, set it to
+`performance`, as requested by AFL.
+```
+$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+powersave
+powersave
+powersave
+powersave
+$ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+```
+
+
+### __3. Testing the installation__
+
+Run the following command to check if the installation was successful.
+```
+$ python3 ./scripts/reproduce.py run cxxfilt-2016-4487 60 40 "AFLGo WindRanger Beacon SelectFuzz DAFL"
+```
+This will run the experiment for 60 seconds with 40 iterations for the target `cxxfilt-2016-4490` using the tools `AFLGo`, `WindRanger`, `Beacon`, `SelectFuzz`, and `DAFL`.
+The experiment will take approximately 15 minutes to complete.
+As a result, you will see a table with the results of the experiment (`output/cxxfilt-2016-4490/cxxfilt-2016-4490.csv`)
+

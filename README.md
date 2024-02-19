@@ -2,6 +2,8 @@
 
 This is the artifact of the paper *Evaluating Directed Fuzzers: Are We Heading in the Right Direction?* to appear in FSE 2024.
 
+The following contents subsumes the contents in `INSTALL` and `REQUIREMENTS` files. Thus, if carefully read, reading this document is sufficient to understand everything about the artifact.
+
 ## 0. __Step for Zenodo Only__
 Download the file `evaluating-directed-fuzzing-artifact.tar.gz` and extract the contents.
 ```
@@ -72,7 +74,7 @@ $ docker pull prosyslab/directed-fuzzing-benchmark
 ```
 The image is big (around 25 GB) and it may take a while to download.
 
-**DIY**
+#### __DIY__
 If you want to build the docker image yourself, run
 ```
 $ docker build -t prosyslab/directed-fuzzing-benchmark -f Dockerfile .
@@ -175,6 +177,17 @@ Nonetheless, we provide the Docker file and the relevant scripts to show how the
 &nbsp;
 
 ## 3. __Running the experiments__
+
+### __3.0. Testing the environment__
+
+Run the following command to check if your environment is ready for the experiment.
+```
+$ python3 ./scripts/reproduce.py run cxxfilt-2016-4487 60 40 "AFLGo WindRanger Beacon SelectFuzz DAFL"
+```
+This will run the experiment for 60 seconds with 40 iterations for the target `cxxfilt-2016-4490` using the tools `AFLGo`, `WindRanger`, `Beacon`, `SelectFuzz`, and `DAFL`.
+If you are using 40 cores in parallel, the experiment will take approximately 15 minutes to complete.
+As a result, you will see a table with the results of the experiment (`output/cxxfilt-2016-4490/cxxfilt-2016-4490.csv`)
+
 
 
 ### __3.1. Running the experiments for each table and figure__
@@ -291,3 +304,46 @@ output.
 - If fuzzing is not running, check section 1.2 of this document to see if your system is properly configured.
 - If you have terminated the experiment, for example, by pressing `Ctrl+C`, you may need to clean up the Docker containers before running next experiment. This is because the name of the Docker container is fixed and the new experiment will fail if the old containers are still running. You can clean up the containers by running `docker kill $(docker ps -q)`. Note that this will kill all the running containers, so be careful when running this command.
 - New results (ex. cxxfilt-2016-4487-AFLGo) will overwrite the old results in `output/data`. If you want to keep the old results, you should make a backup.
+
+
+&nbsp;
+
+### __4. Expanding the artifact__
+
+#### __4.1. Adding new targets__
+You can add new targets to the artifact by following the steps below.
+
+1. Add the target program to the `docker-setup/benchmark-project` directory.
+- `build.sh` to build the project that contains the target program and `seeds` directory to store the seed inputs for the target program is required. `poc` directory to store the proof of concept inputs is optional.
+- FYI, the structure of `docker-setup/benchmark-project` is similar to Google's [Fuzzer Test Suite](https://github.com/google/fuzzer-test-suite).
+
+2. Add necessary target information.
+- Add the target line information to `docker-setup/target/line`.
+- Add a asan-based triage logic to `scripts/triage.py`.
+- Add a patch to `docker-setup/triage` for patch-based triage.
+
+3. Add target to build scripts.
+- To build script for each fuzzing tool in `docker-setup/build_bench_*.sh`.
+- To build script for the patched binaries `docker-setup/build_patched.sh`.
+- For DAFL, you need to support target in `docker-setup/setup_DAFL.sh`.
+
+4. Rebuild the Docker image. This step is necessary because the Docker image must contain all the target binaries to run the experiments.
+
+4. Add the target to experiment scripts
+- To the dictionary `FUZZ_TARGETS` and `SLICE_TARGETS` in `scripts/benchmark.py`.
+
+5. Add the static analysis overhead to `sa_overhead.csv`.
+
+
+#### __4.2. Adding new fuzzing tools__
+You can add new fuzzing tools to the artifact by following the steps below.
+
+1. Write a setup script for the new fuzzing tool in `docker-setup` with the name `setup_*.sh`.
+
+2. Write a build script for the new fuzzing tool in `docker-setup` with the name `build_bench_*.sh`.
+
+3. Write a run script for the new fuzzing tool in `docker-setup/tool-script` with the name `run_*.sh`.
+
+4. Add lines in the Docker script to install the new fuzzing tool.
+
+4. Add the new fuzzing tool to the dictionary `SUPPORTED_TOOLS` in `scripts/reproduce.py`.
