@@ -227,6 +227,11 @@ Here are the supported predefined targets. Note that we do not support Table 7 b
 - Table 9 (`table9`)
    - Expected duration: 60 days
    - Expected output: `output/table9/table9.csv`, corresponding to Table 9 in the paper.
+- Minimal version of Table 9 (`table9-minimal`)
+   - Table 9 is a large-scale experiment and takes a long time to complete even with reduced iterations and time limit. Thus, we provide a minimal version of Table 9 to reduce the runtime to a reasonable level.
+   We restrict the target to `cxxfilt-2016-4492` which is suitable to illustrate the original message of Table 9, that is, the intense randomness in directed fuzzing. The median TTE and the maximum TTE of each tool will reveal the randomness in directed fuzzing.
+   - Expected duration: 60 hours
+   - Expected output: `output/table9-minimal/table9-minimal.csv`, corresponding to the minimal version of Table 9 in the paper.
 - Figure 6 (`figure6`)
    - Expected duration: 6 hours
    - Expected output: `output/figure6/figure6.csv` and `output/figure6/figure6.pdf`, corresponding to Figure 6 in the paper.
@@ -235,7 +240,7 @@ Here are the supported predefined targets. Note that we do not support Table 7 b
    - Expected output: `output/figure7/figure7.csv` and `output/figure7/figure7.pdf`, corresponding to Figure 7 in the paper.
 
 
-Except for Table 9, all experiment should take about 5 days to complete in total. Note that the expected duration is calculated based on the assumption that 40 fuzzing sessions are run in parallel.
+If you run the minimal version of Table 9, all experiment should take about 7 and a half day to complete in total. Note that the expected duration is calculated based on the assumption that 40 fuzzing sessions are run in parallel.
 
 
 &nbsp;

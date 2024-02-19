@@ -97,6 +97,7 @@ EXP_ENV = {
         "table6": 43200,
         "table8": 1000,
         "table9": 86400,
+        "table9-minimal": 43200,
         "figure6": 1000,
         "figure7": 15000,
         "custom": 86400
@@ -107,6 +108,7 @@ EXP_ENV = {
         "table5": 40,
         "table6": 40,
         "table8": 40,
+        "table9-minimal": 40,
         "table9": 40,
         "figure6": 160,
         "figure7": 160,
@@ -119,6 +121,7 @@ EXP_ENV = {
         "table6": ["AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL"],
         "table8": ["AFLGo", "Beacon"],
         "table9": ["AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL"],
+        "table9-minimal": ["AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL"],
         "figure6": ["AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL"],
         "figure7": ["AFLGo", "DAFL"],
         "custom": ["AFLGo", "Beacon", "WindRanger", "SelectFuzz", "DAFL"],
@@ -156,6 +159,9 @@ EXP_ENV = {
             "swftophp-2017-11728",
             "swftophp-2017-11729",
         ],
+        "table9-minimal": [
+            "cxxfilt-2016-4492",
+        ],
         "figure6": [
             "cxxfilt-2016-4490",
         ],
@@ -170,6 +176,7 @@ EXP_ENV = {
         "table6": "a b",
         "table8": "default",
         "table9": "default",
+        "table9-minimal": "default",
         "figure6": "default",
         "figure7": "default",
         "custom": "default",

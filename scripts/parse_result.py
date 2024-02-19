@@ -231,8 +231,8 @@ def print_result_table6(data_dir, outdir, target, tools, target_list):
 
 
 def print_result_table8(data_dir, outdir, target, tools, target_list):
-    timelimit = EXP_ENV["TIMELIMTS"]["table8"] if "original" not in data_dir else 86400
-    iterations = EXP_ENV["ITERATIONS"]["table8"] if "original" not in data_dir else 160
+    timelimit = EXP_ENV["TIMELIMTS"][target] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"][target] if "original" not in data_dir else 160
     triage = "patch"
 
     df_dict = {}
@@ -274,8 +274,8 @@ def print_result_table8(data_dir, outdir, target, tools, target_list):
 
 
 def print_result_table9(data_dir, outdir, target, tools, target_list):
-    timelimit = EXP_ENV["TIMELIMTS"]["table9"] if "original" not in data_dir else 86400
-    iterations = EXP_ENV["ITERATIONS"]["table9"] if "original" not in data_dir else 160
+    timelimit = EXP_ENV["TIMELIMTS"][target] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"][target] if "original" not in data_dir else 160
     triage = "patch"
     
     df_dict = {}
@@ -331,9 +331,9 @@ def print_result_table9(data_dir, outdir, target, tools, target_list):
     tte_df.to_csv(os.path.join(outdir, "%s.csv" % target), index=False)
 
 
-def print_result_figure(data_dir, outdir, target, tools, target_list, name):
-    timelimit = EXP_ENV["TIMELIMTS"][name] if "original" not in data_dir else 86400
-    iterations = EXP_ENV["ITERATIONS"][name] if "original" not in data_dir else 160
+def print_result_figure(data_dir, outdir, target, tools, target_list):
+    timelimit = EXP_ENV["TIMELIMTS"][target] if "original" not in data_dir else 86400
+    iterations = EXP_ENV["ITERATIONS"][target] if "original" not in data_dir else 160
     triage = "patch"
 
     file = open(os.path.join(outdir, "%s.csv" % target), mode='w', newline='')
@@ -364,14 +364,12 @@ def print_result(data_dir, outdir, target, tools, target_list):
         print_result_table6(data_dir, outdir, target, tools, target_list)
     elif target == "table8":
         print_result_table8(data_dir, outdir, target, tools, target_list)
-    elif target == "table9":
+    elif "table9" in target:
         print_result_table9(data_dir, outdir, target, tools, target_list)
     elif target == "figure6":
-        print_result_figure(data_dir, outdir, target, tools, target_list,
-                            "figure6")
+        print_result_figure(data_dir, outdir, target, tools, target_list)
     elif target == "figure7":
-        print_result_figure(data_dir, outdir, target, tools, target_list,
-                            "figure7")
+        print_result_figure(data_dir, outdir, target, tools, target_list)
     else:
         print_result_custom_target(data_dir, outdir, target, tools,
                                    target_list)
