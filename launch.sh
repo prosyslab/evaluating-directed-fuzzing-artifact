@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker run --privileged --rm -it directed-fuzzing-benchmark
+docker run --rm -it prosyslab/directed-fuzzing-benchmark

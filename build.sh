@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t directed-fuzzing-benchmark -f Dockerfile .
+docker build -t prosyslab/directed-fuzzing-benchmark -f Dockerfile .
