@@ -334,10 +334,10 @@ You can add new targets to the artifact by following the steps below.
 
 4. Rebuild the Docker image. This step is necessary because the Docker image must contain all the target binaries to run the experiments.
 
-4. Add the target to experiment scripts
+5. Add the target to experiment scripts
 - To the dictionary `FUZZ_TARGETS` and `SLICE_TARGETS` in `scripts/benchmark.py`.
 
-5. Add the static analysis overhead to `sa_overhead.csv`.
+6. Add the static analysis overhead to `sa_overhead.csv`.
 
 
 #### __4.2. Adding new fuzzing tools__
@@ -351,4 +351,4 @@ You can add new fuzzing tools to the artifact by following the steps below.
 
 4. Add lines in the Docker script to install the new fuzzing tool.
 
-4. Add the new fuzzing tool to the dictionary `SUPPORTED_TOOLS` in `scripts/reproduce.py`.
+5. Add the new fuzzing tool to the dictionary `SUPPORTED_TOOLS` in `scripts/reproduce.py`.
