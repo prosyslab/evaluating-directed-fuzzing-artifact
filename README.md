@@ -352,3 +352,21 @@ You can add new fuzzing tools to the artifact by following the steps below.
 4. Add lines in the Docker script to install the new fuzzing tool.
 
 5. Add the new fuzzing tool to the dictionary `SUPPORTED_TOOLS` in `scripts/reproduce.py`.
+
+
+
+&nbsp;
+
+### __5. Citation__
+If you use this artifact in scientific work, please cite our work as follows.
+
+```bibtex
+@MISC{kim:fse-artifact:2024,
+  author = {Tae Eun Kim and Jaeseung Choi and Seongjae Im and Kihong Heo and Sang Kil Cha},
+  title = {Reproduction Package for the FSE 2024 Article `Evaluating Directed Fuzzers: Are We Heading in the Right Direction?'},
+  howpublished = {\url{https://doi.org/10.5281/zenodo.10669580}},
+  year=2024
+}
+```
+
+
